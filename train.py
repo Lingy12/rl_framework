@@ -10,16 +10,21 @@ import os
 import shutil
 from tools.env_generator import generate_env, generate_init_env
 import argparse
+from tqdm import tqdm
+
 
 parser = argparse.ArgumentParser(description='Experiment Config')
 parser.add_argument('--ename', dest='experiment_name', type=str)
 parser.add_argument('--lconfig', dest='learning_config_path', type=str)
 parser.add_argument('--iter', dest='learning_iteration', type=int, default=1000)
+parser.add_argument('--reset', dest='reset_file', type=str, default='yes')
 args = parser.parse_args()
 
 total_iter = args.learning_iteration
 experiment_path = args.experiment_name
 learning_config = args.learning_config_path
+reset = args.reset_file == 'yes'
+print(reset)
 # Initial configuration is should be in /runs/intersection
 runner_config = './configs/config.yaml'
 # learning_config = './configs/learning_config.json'
@@ -42,15 +47,16 @@ learning_config['transition'], learning_config['states'] = get_state_transition(
 filehandler1 = FileHandler('intersection_0', get_file_suffix_map(learning_config['exploration']), experiment_path)
 filehandler2 = FileHandler('intersection_1', get_file_suffix_map(learning_config['exploration']), experiment_path)
 filehandler3 = FileHandler('intersection_2', get_file_suffix_map(learning_config['exploration']), experiment_path)
-filehandler1.clear_local_file()
-filehandler2.clear_local_file()
-filehandler3.clear_local_file()
+if reset:
+    filehandler1.clear_local_file()
+    filehandler2.clear_local_file()
+    filehandler3.clear_local_file()
 # run(runner_config) # Initial run
 
 # shutil.copytree(src=f'{experiment_path}/runs/intersection',
 #                 dst=f'{experiment_path}/runs/intersection_0', dirs_exist_ok=True)
 
-for i in range(total_iter):
+for i in tqdm(range(total_iter)):
     print(f'---------------------------Learning start round {i}-----------------------------------------')
     # runner_config['configs']['sumo_loc'] += '_' + str(i)
 
